@@ -1,0 +1,37 @@
+<!-- Licensed under a BSD license. See license.html for license -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Amaury's adventures in WebGL</title>
+<link type="text/css" href="pbd-style-sheet.css" rel="stylesheet" />
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="uiContainer">
+  <div id="ui">    
+  </div>
+</div>
+<div id="load">
+  <div class="load_msg"> LOADING... <br/></div>
+</div>  
+<div class="instructions">
+    <span>Click</span> to emit into simulation <br/>
+    <span>Hit R</span> to reset simulation <br/>                
+</div>
+</body>
+<!--
+for most samples webgl-utils only provides shader compiling/linking and
+canvas resizing because why clutter the examples with code that's the same in every sample.
+See https://webgl2fundamentals.org/webgl/lessons/webgl-boilerplate.html
+and https://webgl2fundamentals.org/webgl/lessons/webgl-resizing-the-canvas.html
+for webgl-utils, m3, m4, and webgl-lessons-ui.
+-->
+<script src="resources/webgl-utils.js"></script>
+<script src="resources/webgl-lessons-ui.js"></script>
+<script src="resources/m3.js"></script>
+<script type="module" src="pbd-2d.js"></script>
+</html>
+
+
