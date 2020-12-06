@@ -290,15 +290,12 @@ class PBDSolverGPU {
     this.nborsTex = nborsTex;
   }
 
-  deleteTextures(newSize) {
+  deleteTextures() {
     // if no texture has been initialized, return    
     if (this.positionsTex == null) return;
 
     let gl = this.gl;
-    gl.deleteFramebuffer(this.updatePosition1FB);
-    gl.deleteTexture(this.positions0Tex);
-    if (newSize == false) return;
-
+    gl.deleteFramebuffer(this.updatePosition1FB);    
     gl.deleteFramebuffer(this.updatePosition0FB);
     gl.deleteFramebuffer(this.updateVelocityFB);
     gl.deleteFramebuffer(this.estimatePositionFB);
@@ -312,36 +309,29 @@ class PBDSolverGPU {
     gl.deleteTexture(this.constrainBoundaryTex);
     gl.deleteTexture(this.velocitiesTex);
     gl.deleteTexture(this.positions1Tex);
+    gl.deleteTexture(this.positions0Tex);
   }
 
-  initTextures(newSize) {
+  initTextures() {
     let gl = this.gl;
-    //    this.deleteTextures(newSize);
+    this.deleteTextures();
 
     // Estimate position program
     let { tex: Tex0, dimensions: texDimensions } =
+      createDataTexture(gl, this.positions, 2, gl.RG32F, gl.RG, gl.FLOAT);
+    let { tex: Tex1, dimensions: dummy1 } =
       createDataTexture(gl, this.positions, 2, gl.RG32F, gl.RG, gl.FLOAT);
 
     // we need to create two textures to avoid a feedback loop
     // we'll cycle between these two as needed
     this.positions0Tex = Tex0;
+    this.positions1Tex = Tex1;
     this.positionsTex = this.positions0Tex; // start with texture 0
     this.positionsTexDimensions = texDimensions;
 
     // updatePosition is the frame buffer where we write final positions
     // this creates a cycle for all the frame buffers, yeah!
     this.updatePosition1FB = createFramebuffer(gl, this.positions0Tex);
-    this.updatePositionFB = this.updatePosition0FB;
-
-    // if size of textures hasn't changed, 
-    // no need to recreate textures we will write to
-    if (newSize == false) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      return;
-    }
-    let { tex: Tex1, dimensions: dummy1 } =
-      createDataTexture(gl, this.positions, 2, gl.RG32F, gl.RG, gl.FLOAT);
-    this.positions1Tex = Tex1;
     this.updatePosition0FB = createFramebuffer(gl, this.positions1Tex);
     this.updatePositionFB = this.updatePosition0FB;
 
@@ -522,7 +512,7 @@ class PBDSolverGPU {
     
     this.createNeighborTexture(nbors, this.maxNbors);
 
-    this.initTextures(false);
+    //this.initTextures(false);
 
     for (let step = 0; step < nstep; step++) {
       this.estimatePositionGPU(substep, gravityForce);
