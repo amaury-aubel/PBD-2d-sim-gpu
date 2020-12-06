@@ -131,7 +131,7 @@ class PBDSolverGPU {
 
     // switching from CPU to GPU
     // need to re-initialize all buffers
-    if (gpu) this.initTextures(true);
+    if (gpu) this.initTextures();
     else {
       // swittching from GPU to CPU
       // need to download velocities from frame buffer
@@ -190,7 +190,7 @@ class PBDSolverGPU {
       }
     }
     // if we have injected new particles, recreate all textures
-    if (this.gpu && this.positions.length != numParticles) this.initTextures(true);
+    if (this.gpu && this.positions.length != numParticles) this.initTextures();
     return this.positions;
   }
 
