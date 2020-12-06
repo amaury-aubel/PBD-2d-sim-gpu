@@ -25,7 +25,6 @@ async function main() {
   const ext = gl.getExtension('EXT_color_buffer_float');
   if (!ext) {
     alert("Your browser does not support EXT_color_buffer_float")
-    return;
   }
 
   // look up the divcontainer
