@@ -19,12 +19,12 @@ async function main() {
   const canvas = document.querySelector("#canvas");
   const gl = canvas.getContext("webgl2", { antialias: true });
   if (!gl) {
-    alert("Your browser does not support WebGL 2")
+    alert("Your browser does not support WebGL 2");
     return;
   }
   const ext = gl.getExtension('EXT_color_buffer_float');
   if (!ext) {
-    alert("Your browser does not support EXT_color_buffer_float")
+    alert("Your browser does not support EXT_color_buffer_float");
   }
 
   // look up the divcontainer
