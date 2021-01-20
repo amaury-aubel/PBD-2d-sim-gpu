@@ -13,7 +13,7 @@ While the hybrid Material Point Method (MPM) is gaining popularity for simulatin
 
 An excellent introduction to PBD is available in this paper: http://mmacklin.com/EG2015PBD.pdf.
 
-I have used extensively [Houdini's implementation of PBD](https://www.sidefx.com/docs/houdini/grains/about.html) on the movie How to Train your Dragon: the Hidden World. See [some sand examples here](https://vimeo.com/156511737#t=35s). Here is another example from the movie Abominable where I simulated [an avalanche](https://vimeo.com/156511737#t=94s) using 120 million simulated particles.
+I have used extensively [Houdini's implementation of PBD](https://www.sidefx.com/docs/houdini/grains/about.html) on the movie How to Train your Dragon: the Hidden World. See [some sand examples here](https://vimeo.com/156511737#t=35s). Here is another example from the movie Abominable where I animated [an avalanche](https://vimeo.com/156511737#t=94s) using 120 million simulated particles.
 
 Having fun with the washing machine:
 
