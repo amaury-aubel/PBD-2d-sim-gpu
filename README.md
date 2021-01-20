@@ -3,7 +3,7 @@
 Position-Based Dynamics 2d simulation on the GPU. 
 
 [Click on this link to play with it!](http://aaubel.online.fr/pbd)
-Works on most Android devices & PCs, not so on most Apple computers unfortnately (mac, ipad, etc.)
+Should work on most Android devices & PCs, not so on Apple devices unfortunately (mac, ipad, etc.)
 
 This is a port of the C++ Position-Based Dynamics (PBD) 2d engine I wrote a little while ago to Javascript/WebGL2. While the C++ version was multi-threaded, this one can run on the GPU for practically all steps (except neighborhood search).
 
