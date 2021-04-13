@@ -29,12 +29,27 @@ async function main() {
 
   // look up the divcontainer
   const loadContainerElement = document.querySelector("#load");  
+  const fpsCounter = document.querySelector(".fps_counter");
+  loadContainerElement.innerHTML="LOADING.";
 
   // load PBD text shape that's stored in an "OBJ"-like format
-  let response = await fetch("resources/pbd_font.txt");
-  let text = await response.text();
-  let fontShape = parseOBJ(text);
-
+  // Load all shaders from separate files  
+  const res = await Promise.all(
+    [fetch("resources/pbd_font.txt").then((response) => response.text()),
+    fetch('shaders/ParticleSphereShader2D.vert').then((response) => response.text()),
+    fetch('shaders/ParticleSphereShader2D.frag').then((response) => response.text()),
+    fetch("shaders/default.vert").then((response) => response.text()),
+    fetch("shaders/PositionEstimator.frag").then((response) => response.text()),
+    fetch("shaders/BoundaryConstrain.frag").then((response) => response.text()),
+    fetch("shaders/CheckCollisions.frag").then((response) => response.text()),
+    fetch("shaders/ConstrainParticles.frag").then((response) => response.text()),
+    fetch("shaders/VelocityUpdate.frag").then((response) => response.text()),
+    fetch("shaders/PositionUpdate.frag").then((response) => response.text()),
+    fetch('shaders/Boundary.vert').then((response) => response.text()),
+    fetch('shaders/Boundary.frag').then((response) => response.text())]);
+  loadContainerElement.innerHTML="LOADING..";
+  let fontShape = parseOBJ(res[0]);
+  
   // UI parameters defaults
   let parametersUI = {
     iterations: 2,
@@ -44,6 +59,7 @@ async function main() {
     GPU: ext ? true : false,
     resolution: 0,
     preset: 0,
+    fps: false,
   };
 
   // simulation variables
@@ -54,43 +70,22 @@ async function main() {
   const nstep = 3;              // number of substeps for a simulation frame
   let resolution = parametersUI.resolution;
   let gpu = ext ? true : false;   // use GPU acceleration
-
-  // Load all shaders from separate files
-  response = await fetch('shaders/ParticleSphereShader2D.vert');
-  let vs = await response.text();
-  response = await fetch('shaders/ParticleSphereShader2D.frag');
-  let fs = await response.text();
-  response = await fetch("shaders/default.vert");
-  let defaultVS = await response.text();
-  response = await fetch("shaders/PositionEstimator.frag");
-  let estimatePositionFS = await response.text();
-  response = await fetch("shaders/BoundaryConstrain.frag");
-  let constrainToBoundaryFS = await response.text();
-  response = await fetch("shaders/CheckCollisions.frag");
-  let checkCollisionFS = await response.text();
-  response = await fetch("shaders/ConstrainParticles.frag");
-  let constrainParticlesFS = await response.text();
-  response = await fetch("shaders/VelocityUpdate.frag");
-  let updateVelocityFS = await response.text();
-  response = await fetch("shaders/PositionUpdate.frag");
-  let updatePositionFS = await response.text();
-  response = await fetch('shaders/Boundary.vert');
-  let boundaryVS = await response.text();
-  response = await fetch('shaders/Boundary.frag');
-  let boundaryFS = await response.text();
-
+  let frameCounter = 0;
+  
+  let vs = res[1];  
+  let fs = res[2];  
   let shaders = {
-    defaultVS,
-    estimatePositionFS,
-    constrainToBoundaryFS,
-    checkCollisionFS,
-    constrainParticlesFS,
-    updateVelocityFS,
-    updatePositionFS,
-    boundaryVS,
-    boundaryFS,
+    defaultVS: res[3],
+    estimatePositionFS: res[4],
+    constrainToBoundaryFS: res[5],
+    checkCollisionFS: res[6],
+    constrainParticlesFS: res[7],
+    updateVelocityFS: res[8],
+    updatePositionFS: res[9],
+    boundaryVS: res[10],
+    boundaryFS: res[11],
   }
-
+  loadContainerElement.innerHTML="LOADING.....";
   // Use utils to compile the shaders and link into a program
   let program = webglUtils.createProgramFromSources(gl, [vs, fs]);
 
@@ -135,10 +130,11 @@ async function main() {
     { type: "slider", key: "spin", change: updateUI, min: -2, max: 2, precision: 2, step: 0.05, uiPrecision: 2 },
     { type: "slider", key: "friction", change: updateUI, min: 0, max: 1, precision: 2, step: 0.01, uiPrecision: 2 },
     { type: "slider", key: "maxSpeed", change: updateUI, min: 40, max: 100 },
+    { type: "checkbox", key: "fps", change: updateUI },
   ];
   // only include GPU if webGL extension available
   if (ext) params.push({ type: "checkbox", key: "GPU", change: updateUI });
-  params.push({ type: "option", key: "resolution", change: applyPreset, options: ["low", "medium", "high",/* "ultrahigh"*/] });
+  params.push({ type: "option", key: "resolution", change: applyPreset, options: ["low", /*"medium",*/ "high",/* "ultrahigh"*/] });
   params.push({ type: "option", key: "preset", change: applyPreset, options: ["none", "washer", "splashy", "sticky", "font", "inverse"] });
   let widgets = webglLessonsUI.setupUI(document.querySelector("#ui"), parametersUI, params);
   updateUI();
@@ -164,15 +160,28 @@ async function main() {
   requestAnimationFrame(drawScene);
 
   // draw the scene
+  let fpsTime = 0;
   function drawScene(curTime) {
 
     // advance simulation
     orient += spin;
     if (elapsedTime > 0.5) {
+      let start = performance.now();
       pbd.orient = orient;
       pbd.elapsedTime = elapsedTime;
       pbd.switchMode(gpu);
       pbd.advanceFrame(speed / 60.0, nstep);
+
+      frameCounter++;
+      let stop = performance.now();      
+      fpsTime += stop-start;
+  
+      if (parametersUI.fps && frameCounter % 60 == 0) {
+        let fps = Math.round(1000.0 * frameCounter /  fpsTime);        
+        fpsCounter.innerHTML=fps + " FPS";
+        // reset counter
+        fpsTime = frameCounter = 0;
+      } 
     }
     elapsedTime += 1 / 60.0;
 
@@ -221,7 +230,7 @@ async function main() {
     // simuation coordinates
     pos = [gridMax * pos[0], gridMax * pos[1]];
     pbd.emitParticles( (x, y, data) => m3.distance(x, y, data.pos[0], data.pos[1]) < data.radius,
-                        {pos, radius: 10} );
+                        {pos, radius: 10} );              
   }
 
   function applyPreset() {
@@ -281,12 +290,13 @@ async function main() {
         case 1:
           numGridCells = 160;
           break;
-        case 2:
+/*        case 2:
           numGridCells = 200;
           break;
         case 3:
           numGridCells = 320;
           break;
+*/          
       }
       cellSize = 2 * gridMax / numGridCells; // length of 1 grid cell
       particleRadius = cellSize * 0.5;
@@ -339,6 +349,7 @@ async function main() {
                                                    invert:  parametersUI.preset == 5 } );
       }
     }
+    fpsCounter.hidden = !parametersUI.fps;
     gpu = ext && parametersUI.GPU;
     pbd.numConstraintIteration = parametersUI.iterations;
     spin = parametersUI.spin * Math.PI / 180.0;
